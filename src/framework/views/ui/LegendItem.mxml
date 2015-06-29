@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" verticalAlign="middle" xmlns:ns="http://flex.apache.org/experimental/ns" 
+		 mouseOver="{deleteIcon.visible = deleteIcon.enabled = true}" mouseOut="{deleteIcon.visible = deleteIcon.enabled = false}">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="changeName"/>
+		<s:State name="changeColor"/>
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.ColorChangeEvent;
+			
+			import framework.events.DeleteCategoryEvent;
+			import framework.events.UpdateCategoryEvent;
+		
+			public var categoryId:uint;
+			
+			[Bindable] public var fillColor:uint;
+			[Bindable] public var borderColor:uint = 0xFFF5EE;
+			[Bindable] public var label:String;
+			
+			protected function onInputEnterHandler(ev:FlexEvent):void {
+				if(label != labelInput.text && labelInput.text != "") {
+					//update label
+					dispatchEvent(new UpdateCategoryEvent(
+						UpdateCategoryEvent.UPDATE_CATEGORY,
+						this.categoryId,
+						"title",
+						labelInput.text
+					));
+				}
+				
+				this.currentState = "normal";
+			}
+			
+			protected function onInputFocusChange(ev:FocusEvent):void {
+				
+				trace("LegendItem:onIputFocusChange state:");
+				callLater(labelInput.dispatchEvent, [new FocusEvent(FocusEvent.FOCUS_OUT)]);
+				//labelInput.dispatchEvent(new FocusEvent(FocusEvent.FOCUS_OUT));
+				
+			}
+			protected function onColorChangeHandler(ev:Event):void {
+				if(colorSelect.selectedItem != fillColor) {
+					dispatchEvent(new UpdateCategoryEvent(
+						UpdateCategoryEvent.UPDATE_CATEGORY,
+						this.categoryId,
+						"color",
+						colorSelect.selectedItem
+					));
+				}
+				
+				//this.currentState = "normal";
+			}
+			protected function onDeleteClick():void {
+				dispatchEvent(new DeleteCategoryEvent(DeleteCategoryEvent.DELETE, categoryId)); 
+			}
+		]]>
+	</fx:Script>
+	<s:Group click="{this.currentState = 'changeColor'; colorSelect.open();}" toolTip="click to change color">
+		<s:Rect height="16" width="16" excludeFrom="changeColor">
+			<s:stroke>
+				<s:SolidColorStroke color="{borderColor}"/>
+			</s:stroke>
+			<s:fill>
+				<s:SolidColor color="{fillColor}"/>
+			</s:fill>
+		</s:Rect>
+		<!--<ns:ColorPicker id="colorSelect" includeIn="changeColor" selectedColor="{fillColor}" choose="onColorChangeHandler(event)" close="{this.currentState = 'normal'}"/>-->
+		<mx:ColorPicker id="colorSelect" includeIn="changeColor" selectedColor="{fillColor}" change="onColorChangeHandler(event)" close="{this.currentState = 'normal'}"/>
+	</s:Group>
+	
+	<s:Label id="legendLabel" text="{label}" color="0xFFFFFF" toolTip="click to change name (max. 25)"
+			 excludeFrom="changeName" 
+			 click="{this.currentState = 'changeName'; labelInput.setFocus();}"/>
+	<s:TextInput id="labelInput" text="{label}" maxChars="25" includeIn="changeName" focusOut="{this.currentState = 'normal'}" mouseFocusChange="onInputFocusChange(event)" enter="onInputEnterHandler(event)" />
+	<s:Image id="deleteIcon" source="@Embed(source='assets/images/icons/x_11x11_red.png')" toolTip="click to delete" 
+			 visible="false" enabled="false" click="onDeleteClick()"/>
+</s:HGroup>

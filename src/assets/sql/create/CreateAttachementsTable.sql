@@ -1,0 +1,7 @@
+CREATE TABLE "Attachements" (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,  
+	data BLOB,  
+	link TEXT, 
+	taskId INTEGER,
+	FOREIGN KEY(taskId) REFERENCES Tasks(id)
+)

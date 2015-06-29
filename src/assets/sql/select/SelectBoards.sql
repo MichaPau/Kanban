@@ -1,0 +1,1 @@
+SELECT id, title, creationTime, position, backgroundColor from main.Boards ORDER BY position, id COLLATE NOCASE

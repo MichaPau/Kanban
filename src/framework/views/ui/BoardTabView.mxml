@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="michaPau.components.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:ArrayCollection id="tabProvider"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			
+			import spark.components.Alert;
+			import spark.events.IndexChangeEvent;
+			
+			import framework.events.BoardEvent;
+			import framework.events.CreateUpdateBoardEvent;
+			import framework.models.vo.BoardVO;
+			
+			import michaPau.events.ButtonPositionChangedEvent;
+			
+			[Bindable] private var selectedBoard:BoardVO;
+			
+			public function createButtonBar(_data:ArrayCollection, selectBoardId:uint):void {
+				
+				//trace("BoardTabView::createButtonBar selectBoardId:"+selectBoardId);
+				tabProvider.removeAll();
+				
+				var preselectItem:BoardVO;
+				
+				for each(var boardItem:BoardVO in _data) {
+					
+					//var item:Object = {label: boardItem.title, id: boardItem.id}
+					//tabProvider.addItem(item);
+					tabProvider.addItem(boardItem);
+					if(selectBoardId != 0 && boardItem.id == selectBoardId) {
+						preselectItem = boardItem;
+					}
+					
+				}
+				
+				if(preselectItem) {
+					boardTabs.selectedItem = selectedBoard =  preselectItem;
+					this.dispatchEvent(new BoardEvent(BoardEvent.GET_BOARD_DATA, preselectItem.id));
+				}
+			}
+			
+			public function updateBoard(_boardVO:BoardVO):void {
+				for each(var item:BoardVO in tabProvider) {
+					if(item.id == _boardVO.id) {
+						item.title = _boardVO.title;
+						break;
+					}
+				}
+			}
+			
+			protected function onBoardChange(ev:IndexChangeEvent):void {
+				//trace("BoardTabView::onBoardChange");
+				if(ev.newIndex >= 0) {
+					//var bId:uint = (tabProvider.getItemAt(ev.newIndex) as BoardVO).id;
+					selectedBoard = (tabProvider.getItemAt(ev.newIndex) as BoardVO);
+					this.dispatchEvent(new BoardEvent(BoardEvent.GET_BOARD_DATA, selectedBoard.id));
+				}
+			}
+			
+			protected function onAddBoardClickHandler():void {
+				
+				var copyCatId:uint = 0;
+				if(copyCats_chk.selected) {
+					copyCatId = (copyFrom_ddl.selectedItem as BoardVO).id;
+				}
+				var createBoard:BoardVO = new BoardVO(0, titleInput.text);
+				dispatchEvent(new CreateUpdateBoardEvent(CreateUpdateBoardEvent.CREATE, createBoard, copyCatId));
+				titleInput.text = "";
+				copyCats_chk.selected = false;
+				copyFrom_ddl.selectedItem = null;
+				
+				createCallout.closeDropDown();
+			}
+			
+			protected function onUpdateBoardClick():void {
+				dispatchEvent(new CreateUpdateBoardEvent(CreateUpdateBoardEvent.UPDATE, new BoardVO(selectedBoard.id, updateTitleInput.text, "", 0, updateColor.selectedColor)));
+				//updateTitleInput.text = "";
+				editCallout.closeDropDown();
+			}
+			protected function onDeleteBoardClick():void {
+				Alert.show("Are you sure to delete the board " + selectedBoard.title + " and all associated categories, columns and tasks?", "Confirmation", Alert.OK | Alert.CANCEL, this, onConfirmDelete);
+			}
+			protected function onBoardPositionChanged(ev:ButtonPositionChangedEvent):void {
+				dispatchEvent(ev);
+			}
+			protected function onConfirmDelete(ev:CloseEvent):void {
+				if(ev.detail == Alert.OK) {
+					dispatchEvent(new BoardEvent(BoardEvent.DELETE, selectedBoard.id));
+				}
+			}
+		]]>
+	</fx:Script>
+	<!--<s:Label fontSize="12" fontWeight="bold" color="0xFFFFFF" id="boardTitle" text="{selectedBoard.title}" width="100%" textAlign="center"/>-->
+	<s:HGroup verticalAlign="middle" width="100%">
+		<components:DragAndDropButtonBar id="boardTabs" 
+									skinClass="michaPau.skins.DragAndDropButtonBarSkin" 
+									dataProvider="{tabProvider}" 
+									change="onBoardChange(event)" 
+									labelField="title" dragEnabled="true" positionChanged="onBoardPositionChanged(event)"/>
+		<!--<s:Button width="30" height="20" label="+" click="onAddBoardClickHandler()" toolTip="Create new board"/>-->
+		<s:CalloutButton id="createCallout" width="30" height="20" label="+" toolTip="Create new board">
+			<s:calloutLayout>
+				<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+			</s:calloutLayout>
+			<s:calloutContent>
+				<s:Spacer height="1" width="300"/>
+				<s:Label text="Create a new board" width="100%" textAlign="center" fontWeight="bold"/>
+				<s:HGroup verticalAlign="baseline">
+					<s:Label text="Title:" fontWeight="bold" textAlign="right"/>
+					<s:TextInput id="titleInput" width="150"/>
+				</s:HGroup>
+				<s:CheckBox id="copyCats_chk" label="Copy Categories from board" selected="false" enabled="{tabProvider.length > 0}"/>
+				<s:DropDownList id="copyFrom_ddl" dataProvider="{tabProvider}" labelField="title" enabled="{(copyCats_chk.selected &amp;&amp; tabProvider.length > 0)}" width="95"/>
+				<s:HGroup>
+					<s:Button label="Create" click="onAddBoardClickHandler()"/>
+					<s:Button label="Cancel" click="createCallout.closeDropDown()"/>
+				</s:HGroup>
+			</s:calloutContent>
+		</s:CalloutButton>
+		<s:Spacer width="100%"/>
+		<s:CalloutButton id="editCallout" icon="@Embed(source='assets/images/icons/pen_alt_stroke_16x16.png')" 
+						 width="24" horizontalPosition="before">
+			<s:calloutLayout>
+				<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+			</s:calloutLayout>
+			<s:calloutContent>
+				<s:Label text="Update or delete the board" width="100%" textAlign="center" fontWeight="bold"/>
+				<s:HGroup verticalAlign="baseline">
+					<s:Label text="Title:" fontWeight="bold" width="110" textAlign="right"/>
+					<s:TextInput id="updateTitleInput" width="150" text="{selectedBoard.title}"/>
+				</s:HGroup>
+				<s:HGroup verticalAlign="baseline">
+					<s:Label text="BackgroundColor:" fontWeight="bold" width="110" textAlign="right"/>
+					<mx:ColorPicker id="updateColor" selectedColor="{selectedBoard.backgroundColor}"/>
+					<s:CheckBox id="useDefaultColor_chk" label="use default" change="{useDefaultColor_chk.selected?updateColor.selectedColor=0x0087BD:null}" selected="false"/>
+				</s:HGroup>
+				<s:HGroup>
+					<s:Button label="Update" click="onUpdateBoardClick()"/>
+					<s:Button label="Delete" click="onDeleteBoardClick()"/>
+				</s:HGroup>
+			</s:calloutContent>
+		</s:CalloutButton>
+	</s:HGroup>
+	
+</s:VGroup>

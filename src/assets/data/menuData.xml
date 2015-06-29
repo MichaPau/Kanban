@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<root>
+    <menu label="File"> 
+        <menuitem label="Exit"/> 
+        <menuitem type="separator"/>      
+    </menu> 
+    <menu label="Edit"> 
+        <menuitem label="Preferences"/> 
+    </menu>
+    <menu label="Help">
+    	<menuitem label="Show Help"/>
+    	<menuitem label="About"/>
+    	<menuitem label="Check for update"/>
+    </menu>
+</root> 

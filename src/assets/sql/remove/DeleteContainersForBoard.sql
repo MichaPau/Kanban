@@ -1,0 +1,1 @@
+DELETE FROM main.Containers WHERE boardId = :boardId 

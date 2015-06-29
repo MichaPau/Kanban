@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300" 
+		 backgroundColor="{(colorSelect.selectedItem as CategoryVO).color}" 
+		 xmlns:exp="http://flex.apache.org/experimental/ns" 
+		 creationCompleteEffect="{showEffect}" removedEffect="{hideEffect}" filters="{new DropShadowFilter(5, 60)}" skinClass="components.skins.FlatSparkPosiItSkin">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here 
+		skinClass="components.skins.KanbanPostItSkin"
+		-->
+		<s:Power id="powerEaseShow" easeInFraction="1" exponent="3"/>
+		<s:Power id="powerEaseHide" easeInFraction="0" exponent="3"/>
+		<s:Parallel id="showEffect">
+			<s:Move xFrom="{startPoint.x}" yFrom="{startPoint.y}" xTo="{endPoint.x}" yTo="{endPoint.y}" easer="{powerEaseShow}"/>
+			<s:Rotate angleFrom="{startRotation}" angleTo="0" easer="{powerEaseShow}"/>
+			<s:Resize widthFrom="180" heightFrom="110" widthTo="400" heightTo="300" easer="{powerEaseShow}"/>
+			<s:Fade alphaFrom="0" alphaTo="1" easer="{powerEaseShow}"/>
+		</s:Parallel>
+		<s:Parallel id="hideEffect">
+			<s:Move xFrom="{endPoint.x}" yFrom="{endPoint.y}" xTo="{startPoint.x}" yTo="{startPoint.y}" easer="{powerEaseHide}"/>
+			<s:Resize widthFrom="400" heightFrom="300" widthTo="180" heightTo="110" easer="{powerEaseHide}"/>
+			<s:Rotate angleFrom="{0}" angleTo="{startRotation}" easer="{powerEaseHide}"/>
+			<s:Fade alphaFrom="1" alphaTo="0" easer="{powerEaseHide}"/>
+		</s:Parallel>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.utils.DictionaryUtil;
+			
+			import flash.filters.DropShadowFilter;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			
+			import framework.events.CreateTaskEvent;
+			import framework.events.UpdateTaskEvent;
+			import framework.models.vo.CategoryVO;
+			import framework.models.vo.TaskVO;
+			
+			import michaPau.utils.ColorUtils;
+			
+			[Bindable] public var task:TaskVO;
+			[Bindable] public var fontColor:uint;
+			[Bindable] public var categories:ArrayCollection;
+			
+			[Bindable] public var startPoint:Point;
+			[Bindable] public var endPoint:Point;
+			[Bindable] public var startRotation:Number = 0;
+			
+			public function setCategories(data:ArrayCollection):void {
+				categories = data;
+				if(currentState == "update") {
+					colorSelect.selectedColor = task.color;
+					fontColor = ColorUtils.getBlackOrWhiteContrast(task.color);
+				} else
+					colorSelect.selectedIndex = 0;
+				
+			}
+			
+			protected function onColorChange():void {
+				fontColor = ColorUtils.getBlackOrWhiteContrast((colorSelect.selectedItem as CategoryVO).color);
+				trace("fontColor:"+fontColor);
+			}
+			protected function onCreateClickHandler():void {
+				var newTask:TaskVO = new TaskVO();
+				newTask.title = titleInput.text;
+				newTask.text = textInput.text;
+				newTask.categoryId = (colorSelect.selectedItem as CategoryVO).id; 
+				dispatchEvent(new CreateTaskEvent(CreateTaskEvent.CREATE_TASK, newTask));
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			protected function onUpdateClickHandler():void {
+				var paramDict:Dictionary = new Dictionary();
+				if(titleInput.text != task.title)
+					paramDict["title"] = titleInput.text;
+				if(textInput.text != task.text)
+					paramDict["text"] = textInput.text; 
+				if((colorSelect.selectedItem as CategoryVO).color != task.color)
+					paramDict["categoryId"] = (colorSelect.selectedItem as CategoryVO).id;
+				
+				//TODO this is kinda costly (change to ass. array ?)
+				if(DictionaryUtil.getKeys(paramDict).length > 0) {
+					dispatchEvent(new UpdateTaskEvent(UpdateTaskEvent.UPDATE_TASK, task.id, paramDict));
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+			protected function onCancelClickHandler():void {
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="create"/>
+		<s:State name="update"/>
+	</s:states>
+	<s:VGroup width="100%" height="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" clipAndEnableScrolling="true">
+		<s:HGroup width="100%" verticalAlign="baseline">
+			<s:Label text="Title:" textAlign="right" styleName="markerStyleBig" width="18%" color="{fontColor}" maxDisplayedLines="1"/>
+			<s:TextInput id="titleInput" focusThickness="1" focusColor="{fontColor}" focusAlpha="1" borderColor="{fontColor}" width="85%" text="{task.title}" styleName="markerStyleBig" color="{fontColor}" skinClass="components.skins.KanbanTextInputSkin"/>
+		</s:HGroup>
+		<s:HGroup width="100%" height="100%" verticalAlign="baseline">
+			<s:Label text="Text:" textAlign="right" styleName="markerStyleBig" width="18%" color="{fontColor}" maxDisplayedLines="1"/>
+			<s:TextArea id="textInput" focusThickness="1" focusColor="{fontColor}" focusAlpha="1" borderColor="{fontColor}" width="85%" height="100%" text="{task.text}" color="{fontColor}" styleName="markerStyleBig" skinClass="components.skins.KanbanTextAreaSkin"/>
+		</s:HGroup>
+		<s:HGroup width="100%" verticalAlign="middle">
+			<s:Label text="Category:" textAlign="right" styleName="markerStyleBig" width="18%" color="{fontColor}" maxDisplayedLines="1"/>
+			<!--<exp:ColorPicker id="colorSelect" dataProvider="{categories}" colorField="color" labelField="title" change="onColorChange()"/>-->
+			<mx:ColorPicker id="colorSelect" editable="false" dataProvider="{categories}" colorField="color" labelField="title" change="onColorChange()"/>
+			<s:Label text="{(colorSelect.selectedItem as CategoryVO).title}" color="{fontColor}" styleName="markerStyle"/>
+		</s:HGroup>
+		
+		<s:HGroup width="100%">
+			<s:Spacer width="100%"/>
+			<s:Button label.create="Create" label.update="Update" click.create="onCreateClickHandler()" click.update="onUpdateClickHandler()"/>
+			<s:Button label="Cancel" click="onCancelClickHandler()"/>
+			<s:Spacer width="100%"/>
+		</s:HGroup>
+	</s:VGroup>
+</s:TitleWindow>

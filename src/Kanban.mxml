@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" 
+					   xmlns:ns="http://ns.robotlegs.org/flex/rl2" 
+					   xmlns:mvcs="robotlegs.bender.bundles.mvcs.*" 
+					   xmlns:config="framework.appConfig.*" 
+					   xmlns:views="framework.views.*" 
+					   xmlns:ui="framework.views.ui.*" 
+					   xmlns:exp="http://flex.apache.org/experimental/ns" 
+					   backgroundColor="0x000000" minWidth="900" minHeight="556" frameRate="60">
+	<s:menu> 
+		<mx:FlexNativeMenu id="nativeMenu" dataProvider="{menuData}"  
+						   labelField="@label"  
+						   showRoot="false"/> 
+	</s:menu>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<ns:ContextBuilder>
+			<mvcs:MVCSBundle/>
+			<config:AppConfig/>
+		</ns:ContextBuilder>
+		<fx:XML id="menuData" source="/assets/data/menuData.xml" format="e4x"/>
+	</fx:Declarations>
+	<fx:Style>
+		@namespace mvcs "robotlegs.bender.bundles.mvcs.*";
+		@namespace ui "framework.views.ui.*";
+		@namespace ns "http://ns.robotlegs.org/flex/rl2";
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace views "framework.views.*";
+		@namespace config "framework.appConfig.*";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace exp "http://flex.apache.org/experimental/ns";
+		@namespace comps "michaPau.components.*";
+		
+		global {
+			modal-transparency: 0.2;
+			modal-transparency-blur: 2;
+			modal-transparency-color: #000000;
+		}
+		
+		.panelStyle {
+			backgroundColor: #E0FFB3;
+			borderColor: #31797D;
+			cornerRadius: 2;
+		
+			/*
+			61C791 green
+			2A2F36 dark
+			F23C55 red
+			*/	
+		}
+		
+		comps|ButtonIconWithBrandStyle {
+			brandStyle: 3;
+		}
+		.markerStyle {
+			fontFamily: markerFont;
+		}
+		.markerStyleBig {
+			fontFamily: markerFont;
+			fontSize: 16;
+		}
+		
+		.markerStyleBold {
+			fontFamily: markerFontBold;
+		}
+		
+		exp|Alert {
+			/*skinClass: ClassReference("michaPau.skins.AlertSkin");*/
+			skinClass: ClassReference("flatspark.skins.AlertSkin");
+		}
+		
+		exp|ColorPicker {
+			skinClass: ClassReference("components.skins.CustomColorPickerSkin");
+		}
+		/*s|Button {
+			skinClass: ClassReference("michaPau.components.ButtonIconWithBrandStyle");
+		}*/
+		s|TextInput {
+			/*skinClass: ClassReference("flatspark.skins.TextInputSkin")*/
+		}
+		s|TitleWindow {
+			skinClass: ClassReference("flatspark.skins.TitleWindowSkin");
+		}
+		
+		
+		@font-face { 
+			src: url("C:\Windows\Fonts\eager__.ttf"); 
+			fontFamily: markerFont; 
+			fontStyle: normal; 
+			fontWeight: normal; 
+			embedAsCFF:true; 
+			advancedAntiAliasing: true; 
+		}
+		
+		@font-face { 
+			src: url("C:\Windows\Fonts\eager__.ttf"); 
+			fontFamily: markerFontBold; 
+			fontStyle: normal; 
+			fontWeight: bold; 
+			embedAsCFF:true; 
+			advancedAntiAliasing: true; 
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.clearTimeout;
+			import flash.utils.setTimeout;
+			
+			import flatspark.enums.BrandColorEnum;
+			
+			//BrandColorEnum.
+			private var statusTimeout:uint;
+			
+			public function showStatusMessage(_msg:String):void {
+				this.status = _msg;
+				clearTimeout(statusTimeout);
+				statusTimeout = flash.utils.setTimeout(clearStatusMessage, 5000);
+			}
+			protected function clearStatusMessage():void {
+				this.status = "";
+			}
+		]]>
+	</fx:Script>
+	
+	
+		<s:VGroup width="96%" height="96%" verticalCenter="0" horizontalCenter="0">
+			<ui:BoardTabView width="100%"/>
+			<s:Group width="100%" height="100%">
+				<s:Rect top="0" bottom="0" right="0" left="0">
+					<s:fill>
+						<s:SolidColor id="boardBackground" color="0x0087BD"/>
+					</s:fill>
+				</s:Rect>
+				<s:Scroller id="boardScroller" width="100%" height="100%">
+					<ui:BoardView minWidth="{boardScroller.width}" minHeight="{boardScroller.height}"/>
+				</s:Scroller>
+			</s:Group>
+			<ui:BottomBoardView width="100%"/>
+		</s:VGroup>
+	
+	
+</s:WindowedApplication>

@@ -1,0 +1,1 @@
+DELETE FROM main.Categories WHERE boardId = :boardId

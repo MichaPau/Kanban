@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.controls.VRule;
+			
+			import framework.appConfig.Constants;
+			import framework.models.vo.ContainerVO;
+			
+			import robotlegs.bender.extensions.viewManager.api.IViewManager;
+			
+			[Inject] public var viewManager:IViewManager;
+			
+			private var columns:ArrayList;
+			
+			
+			public function generateContainers(data:ArrayCollection, fTaskMode:String):void {
+				if(containerGroup.numElements > 0)
+					containerGroup.removeAllElements();
+				
+				columns = new ArrayList();
+				
+				var columnPercentWidth:Number = Math.round(100/data.length);
+				
+				for each(var item:ContainerVO in data) {
+					var column:TaskContainerView = new TaskContainerView();
+					column.percentWidth = columnPercentWidth;
+					//column.minWidth = 270;
+					column.percentHeight = 100;
+					column.id = "c"+item.id;
+					
+					column.containerVO = item;
+					
+					//column.containerId = item.id;
+					//column.label = item.title;
+					//column.maxItems = item.maxItems;
+					
+					containerGroup.addElement(column);
+					columns.addItem(column);
+					
+					if(data.getItemIndex(item) < data.length - 1) {
+						var ruler:VRule = new VRule();
+						ruler.setStyle("strokeColor", 0x000000);
+						ruler.setStyle("shadowColor", 0x000000);
+						ruler.percentHeight = 100;
+						containerGroup.addElement(ruler);
+					}
+					if(item.type == Constants.CONTAINER_TYPE_FINISHED)
+						callLater(column.setViewMode,[fTaskMode, true]);
+					
+				}
+			}
+			public function generateTasks(data:ArrayCollection):void {
+				//var column:TaskContainerView = columns.getItemAt(0) as TaskContainerView;
+				//column.setTasks(data.list);
+				for(var i:uint = 0; i < columns.length; i++) {
+					var column:TaskContainerView = columns.getItemAt(i) as TaskContainerView;
+					column.setTasks(data.list);
+				}
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+		
+		<s:HGroup id="containerGroup" width="100%" height="100%" verticalAlign="bottom">
+			
+		</s:HGroup>
+		
+	</s:VGroup>
+	
+</s:Group>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" height="110" width="180" creationComplete="onCreationComplete()" alpha="1" 
+				depth.hovered="1" depth.selected="1" cacheAsBitmap="true">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.StateChangeEvent;
+			
+			import framework.events.DeleteTaskEvent;
+			import framework.models.vo.TaskVO;
+			import framework.views.events.EditCreateTaskEvent;
+			
+			import michaPau.utils.ColorUtils;
+			import michaPau.utils.MathUtils;
+			
+			[Embed(source="assets/images/icons/green_pin.png", smoothing="true")]
+			public const GreenPinIcon:Class;
+			
+			[Embed(source="assets/images/icons/red_pin.png", smoothing="true")]
+			public const RedPinIcon:Class;
+			
+			[Embed(source="assets/images/icons/blue_pin.png", smoothing="true")]
+			public const BluePinIcon:Class;
+			
+			[Embed(source="assets/images/icons/pink_pin.png", smoothing="true")]
+			public const PinkPinIcon:Class;
+			
+			[Embed(source="assets/images/icons/white_pin.png", smoothing="true")]
+			public const WhitePinIcon:Class;
+			
+			[Embed(source="assets/images/icons/orange_pin.png", smoothing="true")]
+			public const OrangePinIcon:Class;
+			
+			[Embed(source="assets/images/icons/yellow_pin.png", smoothing="true")]
+			public const YellowPinIcon:Class;
+			
+			[Embed(source="assets/images/icons/pin_24x24_black.png", smoothing="true")]
+			public const PinIcon:Class;
+			
+			[Embed(source="assets/images/icons/pen_alt_stroke_16x16.png", smoothing="true")]
+			public const EditIcon:Class;
+			
+			[Embed(source="assets/images/icons/x_14x14.png", smoothing="true")]
+			public const DeleteIcon:Class;
+			//import michaPau.utils.MathUtils;
+			
+			protected function onCreationComplete():void {
+				this.addEventListener(MouseEvent.MOUSE_OVER, onMouseOverHandler, false, 0, true);
+				this.addEventListener(StateChangeEvent.CURRENT_STATE_CHANGE, onStateChangeHandler, false, 0, true);
+				
+				this.rotation = MathUtils.randomRange(-3, 3);
+				
+				if(this.currentState != "dragging") {
+					
+					var randPin:uint = Math.floor(Math.random() * (1 + 7 - 1)) + 1;
+					switch (randPin) {
+						case 1:
+							pinIcon.source = new GreenPinIcon();
+							break;
+						case 2:
+							pinIcon.source = new RedPinIcon();
+							break;
+						case 3:
+							pinIcon.source = new BluePinIcon();
+							break;
+						case 4:
+							pinIcon.source = new WhitePinIcon();
+							break;
+						case 5:
+							pinIcon.source = new OrangePinIcon();
+							break;
+						case 6:
+							pinIcon.source = new YellowPinIcon();
+							break;
+						case 7:
+							pinIcon.source = new PinkPinIcon();
+							break;
+					}
+					
+					pinIcon.rotation = MathUtils.randomRange(0, 66);
+				}
+			}
+			
+			protected function onStateChangeHandler(ev:StateChangeEvent):void {
+				
+			}
+			protected function onMouseOverHandler(ev:MouseEvent):void {
+				
+			}
+			protected function onEditClickHandler():void {
+				
+				var taskPoint:Point = new Point(this.x, this.y);
+				//trace("Task point:"+taskPoint.toString());
+				var globalPoint:Point = this.parent.localToGlobal(taskPoint);
+				//trace("Global point:"+globalPoint.toString());
+				
+				//this.owner.dispatchEvent(new UpdateTaskEvent(UpdateTaskEvent.UPDATE_TASK));
+				this.owner.dispatchEvent(new EditCreateTaskEvent(
+					EditCreateTaskEvent.SHOW_TASK_PANEL, 
+					"update", this.data as TaskVO, globalPoint, this.rotation));
+				
+			}
+			protected function onDeleteClickHandler():void {
+				this.owner.dispatchEvent(new DeleteTaskEvent(DeleteTaskEvent.DELETE_TASK, (data as TaskVO).id));
+			}
+			
+			public override function set data(value:Object):void {
+				
+				if(value) {
+					super.data = value;
+					var task:TaskVO = data as TaskVO;
+					background.color = task.color;
+					
+					var fontColor:uint = ColorUtils.getBlackOrWhiteContrast(task.color);
+					
+					titleLabel.setStyle("color", fontColor);
+					textLabel.setStyle("color", fontColor);
+						
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+		<s:State name="selected"/>
+		<s:State name="dragging"/>
+	</s:states>
+	<s:Rect width="100%" height="100%" horizontalCenter="0">
+		<s:stroke>
+			<s:SolidColorStroke color="0x000000"/>
+		</s:stroke>
+		<s:fill>
+			<s:SolidColor id="background"/>
+		</s:fill>
+	</s:Rect>
+	<s:RectangularDropShadow width="100%" height="100%" color="0x000000" distance="5" angle="60"/>
+	<!--<s:Image id="pinIcon" source="{PinIcon}" smooth="true" 
+			 transformX="0" transformY="24" width="24" height="24" smoothingQuality="high" x="{this.width/2}" y="-10" excludeFrom="dragging"/>-->
+	<s:Image id="pinIcon" smooth="true" 
+			 transformX="22" transformY="28" width="24" height="29" smoothingQuality="high" x="{this.width/2 - 22}" y="-12" excludeFrom="dragging"/>
+	<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="20">
+		<!--
+		<s:Label text="sTime:{(data as TaskVO).selectionTime}"/>
+		<s:Label text="fTime:{(data as TaskVO).finishedTime}"/>
+		-->
+		<s:Label id="titleLabel" text="{(data as TaskVO).title}" maxDisplayedLines="1" width="100%" styleName="markerStyle" fontSize="14" showTruncationTip="true"/>
+		<s:Label id="textLabel" text="{(data as TaskVO).text}" height="100%" width="100%" maxDisplayedLines="-1" lineBreak="toFit" styleName="markerStyle" showTruncationTip="true"/>
+	</s:VGroup>
+	<s:HGroup visible="false" visible.hovered="true" visible.selected="true" right="5" top="5">
+		<s:Button click="onEditClickHandler()" width="24" icon="{EditIcon}" skinClass="components.skins.SmoothIconButtonSkin" toolTip="Edit task"/>
+		<s:Button click="onDeleteClickHandler()" width="24" icon="{DeleteIcon}" skinClass="components.skins.SmoothIconButtonSkin" toolTip="Delete task (no undo)"/>
+	</s:HGroup>
+</s:ItemRenderer>

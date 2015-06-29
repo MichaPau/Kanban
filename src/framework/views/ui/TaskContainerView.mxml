@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:layouts="components.layouts.*"
+		 creationComplete="onCreationComplete()" horizontalAlign="center" minWidth="250">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.utils.DictionaryUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
+			import mx.collections.ISort;
+			import mx.collections.ISortField;
+			import mx.collections.ListCollectionView;
+			import mx.events.DragEvent;
+			import mx.utils.ObjectUtil;
+			
+			import spark.collections.Sort;
+			import spark.collections.SortField;
+			
+			import components.layouts.KanbanLayout;
+			import components.renderer.CondensedTaskItemRenderer;
+			import components.renderer.SimpleTaskItemRenderer;
+			
+			import framework.appConfig.Constants;
+			import framework.events.CreateContainerEvent;
+			import framework.events.DeleteContainerEvent;
+			import framework.events.DeleteTaskEvent;
+			import framework.events.SharedObjectEvent;
+			import framework.events.UpdateContainerEvent;
+			import framework.events.UpdateTaskEvent;
+			import framework.models.vo.ContainerVO;
+			import framework.models.vo.SharedObjectVO;
+			import framework.models.vo.TaskVO;
+			import framework.views.events.EditCreateTaskEvent;
+			
+			import michaPau.utils.DateUtils;
+			
+			import robotlegs.bender.extensions.viewManager.api.IViewManager;
+			
+			[Bindable] public var containerVO:ContainerVO;
+			
+			//public var containerId:uint;
+			//[Bindable] public var label:String;
+			//[Bindable] public var maxItems:uint;
+			
+			[Bindable] public var tasks:ListCollectionView;
+			[Bindable] public var viewModeProvider:ArrayCollection = new ArrayCollection([
+				{label:"PostIt mode", value:"postItMode"},
+				{label:"Condensed mode", value:"condensedMode"}
+			]);
+			
+			[Inject] public var viewManager:IViewManager;
+			
+			protected function onCreationComplete():void {
+				taskList.addEventListener(DeleteTaskEvent.DELETE_TASK, dispatchEvent);
+				//taskList.addEventListener(UpdateTaskEvent.UPDATE_TASK, onUpdateTaskClick);
+				taskList.addEventListener(EditCreateTaskEvent.SHOW_TASK_PANEL, onUpdateTaskClick);
+				
+				containerLabel.text = containerVO.title;
+				
+				if(containerVO.type == Constants.CONTAINER_TYPE_NORMAL) {
+					deleteButton.enabled  = true;
+					maxItemsInput.enabled = true;
+					addColumnAfter.enabled = true;
+					addColumnBefore.enabled = true;
+					
+					containerLabel.text += " (max. "+containerVO.maxItems+")";
+				} else {
+					deleteButton.enabled = false;
+					maxItemsInput.enabled = false;
+					addColumnAfter.enabled = false;
+					addColumnBefore.enabled = false;
+				}
+				
+				if(containerVO.type == Constants.CONTAINER_TYPE_FINISHED) {
+					changeViewMode_ddl.visible = changeViewMode_ddl.includeInLayout = changeViewMode_ddl.enabled = true;
+					changeViewMode_ddl.requireSelection = true;
+				}
+				
+				
+				
+			}
+			public function setTasks(list:IList):void {
+				//trace("TaskContainerView::setTasks ->"+containerVO.title);
+				tasks = new ListCollectionView(list);
+				
+				tasks.filterFunction = filterCollectionFunc;
+				var sort:ISort = new Sort();
+				sort.compareFunction = dateCompareFunc;
+				var sortField:ISortField = new SortField("creationTime");
+				sort.fields = [sortField];
+				
+				tasks.sort = sort;
+				
+				tasks.refresh();
+			}
+			
+			private function dateCompareFunc(a:Object, b:Object, _fields:Array):int {
+				
+				var dateA:Date = parseUTCDate((a as TaskVO).creationTime);
+				var dateB:Date = parseUTCDate((b as TaskVO).creationTime);
+				
+				return ObjectUtil.dateCompare(dateA, dateB);
+			}
+			
+			private function parseUTCDate(str:String):Date {
+				var matches : Array = str.match(/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/);
+				
+				var d : Date = new Date();
+				
+				d.setUTCFullYear(int(matches[1]), int(matches[2]) - 1, int(matches[3]));
+				d.setUTCHours(int(matches[4]), int(matches[5]), int(matches[6]), 0);
+				
+				return d;
+			}
+			protected function onDropTaskHandler(ev:DragEvent):void {
+				ev.preventDefault();
+				taskList.destroyDropIndicator();
+				taskList.drawFocus(false);
+				if(tasks.length < containerVO.maxItems || containerVO.maxItems == 0) {
+					var dragObj:Vector.<Object> = ev.dragSource.dataForFormat("itemsByIndex") as Vector.<Object>;
+					var dragTask:TaskVO = dragObj[0] as TaskVO;
+					
+					var paramDict:Dictionary = new Dictionary();
+					
+					if(containerVO.type == Constants.CONTAINER_TYPE_BACKLOG) {
+						paramDict["selectionTime"] = null;
+					} else if(containerVO.type == Constants.CONTAINER_TYPE_NORMAL && dragTask.selectionTime == null) {
+						paramDict["selectionTime"] = DateUtils.getISO8601_DateTimeString();
+					}
+					if(containerVO.type == Constants.CONTAINER_TYPE_FINISHED) {
+						paramDict["finishedTime"] = DateUtils.getISO8601_DateTimeString();
+					} else if(containerVO.type == Constants.CONTAINER_TYPE_NORMAL && dragTask.finishedTime != null) {
+						paramDict["finishedTime"] = null;
+					}
+					
+					
+					paramDict["containerId"] = containerVO.id;
+					
+					dispatchEvent(new UpdateTaskEvent(UpdateTaskEvent.UPDATE_TASK, dragTask.id, paramDict));
+				}
+			}
+			
+			protected function onUpdateTaskClick(ev:Event):void {
+				
+				//dispatchEvent(new EditCreateTaskEvent(EditCreateTaskEvent.SHOW_TASK_PANEL, "update", taskList.selectedItem as TaskVO));
+			
+				dispatchEvent(ev as EditCreateTaskEvent);
+			}
+			
+			protected function onAddColumnBefore():void {
+				var newContainer:ContainerVO = new ContainerVO();
+				newContainer.position = containerVO.position;
+				dispatchEvent(new CreateContainerEvent(CreateContainerEvent.CREATE, newContainer));
+			}
+			protected function onAddColumnAfter():void {
+				var newContainer:ContainerVO = new ContainerVO();
+				newContainer.position = containerVO.position + 1;
+				dispatchEvent(new CreateContainerEvent(CreateContainerEvent.CREATE, newContainer));
+			}
+			
+			protected function onUpdateContainerClick():void {
+			
+				var paramDict:Dictionary = new Dictionary();
+				if(titleInput.text != containerVO.title) {
+					paramDict["title"] = titleInput.text;
+				}
+				
+				var maxItems:uint = parseInt(maxItemsInput.text);
+				
+				if(maxItems != containerVO.maxItems) {
+					paramDict["maxItems"] = maxItems;
+				}
+				
+				if(DictionaryUtil.getKeys(paramDict).length > 0) {
+					dispatchEvent(new UpdateContainerEvent(UpdateContainerEvent.UPDATE, containerVO.id, paramDict));
+					editColumn.closeDropDown();
+				}
+			}
+			protected function onDeleteContainerClick():void {
+				dispatchEvent(new DeleteContainerEvent(DeleteContainerEvent.DELETE, containerVO));
+			}
+			private function filterCollectionFunc(item:TaskVO):Boolean {
+				//trace("TaskContainerView::filterCollectionFunc");
+				//trace(item.containerId + ":" + containerVO.id);
+				return item.containerId == containerVO.id;
+			}
+			
+			public function setViewMode(_viewMode:String, setDropDown:Boolean = false):void {
+				switch (_viewMode) {
+					case Constants.FINISHED_TASKS_POSTIT_MODE:
+						taskList.itemRenderer = new ClassFactory(SimpleTaskItemRenderer);
+						taskList.dataGroup.layout = new KanbanLayout();
+						
+						if (setDropDown)
+							changeViewMode_ddl.selectedIndex = 1;
+						break;
+					case Constants.FINISHED_TASKS_CONDENSED_MODE:
+						taskList.itemRenderer = new ClassFactory(CondensedTaskItemRenderer);
+						var vLayout:VerticalLayout = new VerticalLayout();
+						vLayout.horizontalAlign = "center";
+						taskList.dataGroup.layout = vLayout;
+						
+						if (setDropDown)
+							changeViewMode_ddl.selectedIndex = 1;
+						
+						break;
+				}
+				
+				
+			}
+			protected function onViewModeChange(ev:Event):void {
+				setViewMode(changeViewMode_ddl.selectedItem.value);
+				dispatchEvent(new SharedObjectEvent(SharedObjectEvent.SAVE, SharedObjectVO.FINISHED_TASK_VIEW_MODE, changeViewMode_ddl.selectedItem.value));
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<s:HGroup width="100%" paddingLeft="5" paddingRight="5" verticalAlign="middle" 
+			  mouseOver="{addColumnBefore.visible = addColumnAfter.visible = editColumn.visible =  true}" 
+			  mouseOut="{addColumnBefore.visible = addColumnAfter.visible = editColumn.visible = false}">
+		<s:Button id="addColumnBefore" click="onAddColumnBefore()" label="+" visible="false" toolTip="Add a new column before this one"/>
+		<s:Spacer width="100%" minWidth="2" opaqueBackground="0xFF00000"/>
+		<s:Label id="containerLabel" text="{containerVO.title}(max.{containerVO.maxItems})" maxDisplayedLines="2" textAlign="center" styleName="markerStyle" fontSize="16"/>
+		<!--<s:Button label="-" click="onDeleteContainer()" width="26"/>-->
+		<s:CalloutButton id="editColumn" icon="@Embed(source='assets/images/icons/pen_alt_stroke_16x16.png')" 
+						 width="24" visible="false" verticalPosition="after" horizontalPosition="middle">
+			<s:calloutLayout>
+				<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+			</s:calloutLayout>
+			<s:calloutContent>
+				<s:Label text="Update or delete the column" width="100%" textAlign="center" fontWeight="bold"/>
+				<s:HGroup verticalAlign="baseline">
+					<s:Label text="Title:" fontWeight="bold" width="100" textAlign="right"/>
+					<s:TextInput id="titleInput" width="150" text="{containerVO.title}"/>
+				</s:HGroup>
+				<s:HGroup verticalAlign="baseline">
+					<s:Label text="maxItems (1-7):" fontWeight="bold" width="100" textAlign="right"/>
+					<s:TextInput id="maxItemsInput" width="150" text="{containerVO.maxItems}" restrict="1-7"/>
+				</s:HGroup>
+				<s:HGroup>
+					<s:Button id="updateButton" label="Update" click="onUpdateContainerClick()"/>
+					<s:Button id="deleteButton" label="Delete" click="onDeleteContainerClick()"/>
+				</s:HGroup>
+			</s:calloutContent>
+		</s:CalloutButton>
+		<s:Spacer width="100%" minWidth="2" opaqueBackground="0xFF00000"/>
+		<s:Button id="addColumnAfter" click="onAddColumnAfter()" label="+" visible="false" toolTip="Add a new column after this one"/>
+	</s:HGroup>
+	<!--  -->
+	<s:List id="taskList" width="90%" height="100%" contentBackgroundAlpha="0" borderVisible="false" useVirtualLayout="false" 
+			verticalScrollPolicy="auto"
+			dataProvider="{tasks}" skinClass="components.skins.KanbanListSkin"
+			itemRenderer="components.renderer.SimpleTaskItemRenderer"
+			dragEnabled="true" dropEnabled="true" dragDrop="onDropTaskHandler(event)">
+		<!--<s:layout>
+			<layouts:KanbanLayout/>
+		
+		</s:layout>-->
+	</s:List>
+	<s:DropDownList id="changeViewMode_ddl" change="onViewModeChange(event)" width="80%" dataProvider="{viewModeProvider}" visible="false" includeInLayout="false" enabled="false"/>
+</s:VGroup>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:ns="http://flex.apache.org/experimental/ns" xmlns:components="michaPau.components.*">
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="add"/>
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import framework.events.CreateCategoryEvent;
+			import framework.events.StatusBarMessageEvent;
+			import framework.models.vo.CategoryVO;
+			import framework.views.events.EditCreateTaskEvent;
+			
+			private var legendList:ArrayCollection;
+			private const MAX_LEGEND_ITEMS:int = 7;
+			
+			public function generateLegend(data:ArrayCollection):void {
+				
+				legendList = data;
+				if(legendGroup.numElements > 0)
+					legendGroup.removeAllElements();
+				
+				for each(var item:CategoryVO in data) {
+					var legendItem:LegendItem = new LegendItem();
+					legendItem.categoryId = item.id;
+					legendItem.fillColor = item.color;
+					legendItem.label = item.title;
+					legendGroup.addElement(legendItem);
+				}
+			}
+			
+			public function boardEnabled(flag:Boolean):void {
+				newTask_btn.enabled = addCat_btn.enabled = flag;
+			}
+			protected function onCreateTaskClickHandler():void {
+				
+				dispatchEvent(new EditCreateTaskEvent(EditCreateTaskEvent.SHOW_TASK_PANEL, "create"));
+			}
+			
+			protected function onAddCatClick():void {
+				
+				// spark -> dispatchEvent(new CreateCategoryEvent(CreateCategoryEvent.CREATE_CATEGORY, colorSelect.solidColor.color, labelInput.text));
+				if(legendGroup.numElements < this.MAX_LEGEND_ITEMS) {
+					dispatchEvent(new CreateCategoryEvent(CreateCategoryEvent.CREATE_CATEGORY, colorSelect.selectedColor, labelInput.text));
+					labelInput.text = "";
+					//colorSelect.selectedIndex = -1;
+					this.currentState = "normal";
+				} else {
+					dispatchEvent(new StatusBarMessageEvent(StatusBarMessageEvent.SHOW_MESSAGE, "Only max. " + MAX_LEGEND_ITEMS + " categories allowed!"));
+				}
+			}
+			
+			protected function onCancelAddHandler():void {
+				labelInput.text = "";
+				this.currentState = "normal";
+			}
+		]]>
+	</fx:Script>
+	<s:HGroup id="bottomGroup" width="100%" verticalAlign="middle">
+		<s:Button id="newTask_btn" label="New task" click="onCreateTaskClickHandler()" enabled="false"/>
+		<!--<s:Button id="newTask_btn" label="New task" click="onCreateTaskClickHandler()" enabled="false"/>-->
+		<s:Spacer width="100%"/>
+		<!--<ns:ColorPicker id="colorSelect" includeIn="add"/>-->
+		<mx:ColorPicker id="colorSelect" includeIn="add"/>
+		<s:TextInput id="labelInput" includeIn="add"/>
+		<s:Button click="onAddCatClick()" label="OK" includeIn="add"/>
+		<s:Button label="Cancel" includeIn="add" click="onCancelAddHandler()"/>
+		<s:Button id="addCat_btn" label="Add Cat" click="{this.currentState = 'add'}" enabled="false"/>
+		<s:HGroup id="legendGroup" verticalAlign="middle"/>
+	</s:HGroup>
+</s:Group>
