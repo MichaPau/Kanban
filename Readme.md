@@ -16,7 +16,7 @@ it is now a strongly extended versions with some useful functionality.
 
 etc.
 
-It uses Flex SDK 4.11.1 and Robotlegs v 2.1
+It uses Flex SDK 4.14.1 and Robotlegs v 2.1
 
 PinIcons by http://www.fuzzimo.com/free-vector-post-it-notes-push-pins/
 
