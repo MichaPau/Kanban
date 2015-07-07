@@ -17,6 +17,7 @@ it is now a strongly extended versions with some useful functionality.
 etc.
 
 It uses Flex SDK 4.11.1 and Robotlegs v 2.1
+
 PinIcons by http://www.fuzzimo.com/free-vector-post-it-notes-push-pins/
 
 It uses a local sqlite db, there is no remote db connection or cloud service in the moment.
@@ -24,6 +25,8 @@ It uses a local sqlite db, there is no remote db connection or cloud service in 
 Some dependencies for some skins and components with:
 (https://github.com/MichaPau/Flex-lib)
 
-Screenshoot:
+Screenshot:
+
+<img src='https://github.com/MichaPau/Kanban/blob/master/docs/img/screenshot_01.png'/>
 
 
