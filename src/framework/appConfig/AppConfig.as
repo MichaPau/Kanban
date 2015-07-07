@@ -21,14 +21,17 @@ package framework.appConfig
 	import framework.controllers.GetCategoryDataCommand;
 	import framework.controllers.LoadBoardsCommand;
 	import framework.controllers.SaveSharedObjectCommand;
+	import framework.controllers.ShowErrorCommand;
 	import framework.controllers.StartupCommand;
 	import framework.controllers.UpdateBoardCommand;
 	import framework.controllers.UpdateCategoryCommand;
 	import framework.controllers.UpdateContainerCommand;
+	import framework.controllers.UpdateTaskBoardIdCommand;
 	import framework.controllers.UpdateTaskCommand;
 	import framework.controllers.guards.NotLastCategory;
 	import framework.controllers.macros.BoardDataMacro;
 	import framework.events.BoardEvent;
+	import framework.events.ButtonPositionChangedEvent;
 	import framework.events.CreateCategoryEvent;
 	import framework.events.CreateContainerEvent;
 	import framework.events.CreateTaskEvent;
@@ -37,6 +40,7 @@ package framework.appConfig
 	import framework.events.DeleteCategoryEvent;
 	import framework.events.DeleteContainerEvent;
 	import framework.events.DeleteTaskEvent;
+	import framework.events.GlobalErrorEvent;
 	import framework.events.SharedObjectEvent;
 	import framework.events.UpdateCategoryEvent;
 	import framework.events.UpdateContainerEvent;
@@ -70,8 +74,6 @@ package framework.appConfig
 	import framework.views.ui.TaskContainerView;
 	import framework.views.ui.TestView;
 	
-	import michaPau.events.ButtonPositionChangedEvent;
-	
 	import robotlegs.bender.extensions.contextView.ContextView;
 	import robotlegs.bender.extensions.eventCommandMap.api.IEventCommandMap;
 	import robotlegs.bender.extensions.mediatorMap.api.IMediatorMap;
@@ -92,8 +94,8 @@ package framework.appConfig
 		[Inject] public var eventDispatcher:IEventDispatcher;
 		
 		
-		//private static const DB_FILE_NAME:String = "Kanban_01.db";
-		private static const DB_FILE_NAME:String = "Kanban_Test_02.db";
+		private static const DB_FILE_NAME:String = "Kanban_01.db";
+		//private static const DB_FILE_NAME:String = "Kanban_Test_02.db";
 		
 		
 		public function configure():void {
@@ -126,6 +128,7 @@ package framework.appConfig
 			commandMap.map(DatabaseEvent.DATABASE_RELOAD).toCommand(LoadBoardsCommand);
 			commandMap.map(BoardEvent.GET_BOARD_DATA).toCommand(BoardDataMacro);
 			commandMap.map(UpdateTaskEvent.UPDATE_TASK).toCommand(UpdateTaskCommand);
+			commandMap.map(UpdateTaskEvent.UPDATE_TASK_BOARD_ID).toCommand(UpdateTaskBoardIdCommand);
 			commandMap.map(CreateTaskEvent.CREATE_TASK).toCommand(CreateTaskCommand);
 			commandMap.map(DeleteTaskEvent.DELETE_TASK).toCommand(DeleteTaskCommand);
 			commandMap.map(CreateCategoryEvent.CREATE_CATEGORY).toCommand(CreateCategoryCommand);
@@ -146,7 +149,7 @@ package framework.appConfig
 			//App commands
 			commandMap.map(EditCreateTaskEvent.SHOW_TASK_PANEL).toCommand(EditCreateTaskCommand);
 			commandMap.map(SharedObjectEvent.SAVE).toCommand(SaveSharedObjectCommand);
-			
+			commandMap.map(GlobalErrorEvent.GLOBAL_ERROR).toCommand(ShowErrorCommand);
 			context.afterInitializing(init);
 			
 		}

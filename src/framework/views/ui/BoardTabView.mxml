@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
-		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="michaPau.components.*">
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="components.*" xmlns:libComps="michaPau.components.*">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 		<s:ArrayCollection id="tabProvider"/>
@@ -14,10 +14,12 @@
 			import spark.events.IndexChangeEvent;
 			
 			import framework.events.BoardEvent;
+			import framework.events.ButtonPositionChangedEvent;
 			import framework.events.CreateUpdateBoardEvent;
+			import framework.events.UpdateTaskEvent;
 			import framework.models.vo.BoardVO;
 			
-			import michaPau.events.ButtonPositionChangedEvent;
+			
 			
 			[Bindable] private var selectedBoard:BoardVO;
 			
@@ -84,11 +86,14 @@
 				editCallout.closeDropDown();
 			}
 			protected function onDeleteBoardClick():void {
-				Alert.show("Are you sure to delete the board " + selectedBoard.title + " and all associated categories, columns and tasks?", "Confirmation", Alert.OK | Alert.CANCEL, this, onConfirmDelete);
+				Alert.show("Are you sure to delete the board " + selectedBoard.title + " and all associated categories, columns and tasks?", "Confirmation", Alert.OK | Alert.CANCEL, this, onConfirmDelete, null, Alert.CANCEL);
 			}
 			protected function onBoardPositionChanged(ev:ButtonPositionChangedEvent):void {
 				dispatchEvent(ev);
 			}
+			protected function onTaskBoardIdChanged(ev:UpdateTaskEvent):void {
+				dispatchEvent(ev);
+			} 
 			protected function onConfirmDelete(ev:CloseEvent):void {
 				if(ev.detail == Alert.OK) {
 					dispatchEvent(new BoardEvent(BoardEvent.DELETE, selectedBoard.id));
@@ -99,11 +104,15 @@
 	<!--<s:Label fontSize="12" fontWeight="bold" color="0xFFFFFF" id="boardTitle" text="{selectedBoard.title}" width="100%" textAlign="center"/>-->
 	<s:HGroup verticalAlign="middle" width="100%">
 		<components:DragAndDropButtonBar id="boardTabs" 
-									skinClass="michaPau.skins.DragAndDropButtonBarSkin" 
+									skinClass="components.skins.DragAndDropButtonBarSkin" 
 									dataProvider="{tabProvider}" 
 									change="onBoardChange(event)" 
-									labelField="title" dragEnabled="true" positionChanged="onBoardPositionChanged(event)"/>
-		<!--<s:Button width="30" height="20" label="+" click="onAddBoardClickHandler()" toolTip="Create new board"/>-->
+									labelField="title" dragEnabled="true" positionChanged="onBoardPositionChanged(event)" UpdateTaskEvent_UpdateTaskBoardId="onTaskBoardIdChanged(event)"/>
+		<!--<s:TabBar id="boardTabs" 
+				  dataProvider="{tabProvider}" 
+				  change="onBoardChange(event)" 
+				  labelField="title"/>-->
+		<!--<components:ButtonIconWithBrandStyle width="30" height="20" label="+" click="onAddBoardClickHandler()" toolTip="Create new board"/>-->
 		<s:CalloutButton id="createCallout" width="30" height="20" label="+" toolTip="Create new board">
 			<s:calloutLayout>
 				<s:VerticalLayout horizontalAlign="center" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
@@ -116,10 +125,10 @@
 					<s:TextInput id="titleInput" width="150"/>
 				</s:HGroup>
 				<s:CheckBox id="copyCats_chk" label="Copy Categories from board" selected="false" enabled="{tabProvider.length > 0}"/>
-				<s:DropDownList id="copyFrom_ddl" dataProvider="{tabProvider}" labelField="title" enabled="{(copyCats_chk.selected &amp;&amp; tabProvider.length > 0)}" width="95"/>
+				<s:DropDownList id="copyFrom_ddl" contentBackgroundAlpha="0.9" dataProvider="{tabProvider}" labelField="title" enabled="{(copyCats_chk.selected &amp;&amp; tabProvider.length > 0)}" width="95"/>
 				<s:HGroup>
-					<s:Button label="Create" click="onAddBoardClickHandler()"/>
-					<s:Button label="Cancel" click="createCallout.closeDropDown()"/>
+					<libComps:ButtonIconWithBrandStyle label="Create" click="onAddBoardClickHandler()"/>
+					<libComps:ButtonIconWithBrandStyle label="Cancel" click="createCallout.closeDropDown()"/>
 				</s:HGroup>
 			</s:calloutContent>
 		</s:CalloutButton>
@@ -141,8 +150,8 @@
 					<s:CheckBox id="useDefaultColor_chk" label="use default" change="{useDefaultColor_chk.selected?updateColor.selectedColor=0x0087BD:null}" selected="false"/>
 				</s:HGroup>
 				<s:HGroup>
-					<s:Button label="Update" click="onUpdateBoardClick()"/>
-					<s:Button label="Delete" click="onDeleteBoardClick()"/>
+					<libComps:ButtonIconWithBrandStyle label="Update" click="onUpdateBoardClick()"/>
+					<libComps:ButtonIconWithBrandStyle label="Delete" click="onDeleteBoardClick()"/>
 				</s:HGroup>
 			</s:calloutContent>
 		</s:CalloutButton>

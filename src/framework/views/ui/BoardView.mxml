@@ -53,7 +53,8 @@
 						containerGroup.addElement(ruler);
 					}
 					if(item.type == Constants.CONTAINER_TYPE_FINISHED)
-						callLater(column.setViewMode,[fTaskMode, true]);
+						//callLater(column.setViewMode,[fTaskMode, true]);
+						column.initViewMode(fTaskMode);
 					
 				}
 			}

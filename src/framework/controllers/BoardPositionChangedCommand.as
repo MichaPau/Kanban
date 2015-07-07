@@ -1,21 +1,24 @@
 package framework.controllers
 {
+	import framework.events.ButtonPositionChangedEvent;
 	import framework.models.BoardModel;
 	import framework.models.vo.BoardVO;
 	import framework.models.vo.ContainerVO;
-	
-	import michaPau.events.ButtonPositionChangedEvent;
+	import framework.services.ISQLService;
 	
 	import robotlegs.bender.bundles.mvcs.Command;
 	
 	public class BoardPositionChangedCommand extends Command {
 		
 		[Inject] public var event:ButtonPositionChangedEvent;
-		[Inject] public var boardModel:BoardModel;
+		[Inject] public var service:ISQLService;
 		
 		public override function execute():void {
 			trace("BoardPositionChangedEvent::execute");
+			trace("oldIndex:"+(event.itemData as BoardVO).position);
+			trace("new pos:"+event.newIndex);
 			
+			service.updateBoardPosition((event.itemData as BoardVO).position, event.newIndex, (event.itemData as BoardVO).id);
 			/*var movedBoard:ContainerVO = event.itemData as BoardVO;
 			if(event.newIndex == 0)
 				movedBoard.position = 1;

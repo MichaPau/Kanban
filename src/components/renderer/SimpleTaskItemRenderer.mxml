@@ -2,8 +2,9 @@
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				xmlns:s="library://ns.adobe.com/flex/spark" 
 				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				xmlns:components="michaPau.components.*"
 				autoDrawBackground="false" height="110" width="180" creationComplete="onCreationComplete()" alpha="1" 
-				depth.hovered="1" depth.selected="1" cacheAsBitmap="true">
+				depth.hovered="1" depth.selected="1" cacheAsBitmap="true" transformX="90" transformY="55">
 	<fx:Script>
 		<![CDATA[
 			import mx.events.StateChangeEvent;
@@ -14,6 +15,7 @@
 			
 			import michaPau.utils.ColorUtils;
 			import michaPau.utils.MathUtils;
+			import michaPau.utils.geom.SimplePoint;
 			
 			[Embed(source="assets/images/icons/green_pin.png", smoothing="true")]
 			public const GreenPinIcon:Class;
@@ -50,7 +52,7 @@
 				this.addEventListener(MouseEvent.MOUSE_OVER, onMouseOverHandler, false, 0, true);
 				this.addEventListener(StateChangeEvent.CURRENT_STATE_CHANGE, onStateChangeHandler, false, 0, true);
 				
-				this.rotation = MathUtils.randomRange(-3, 3);
+				this.rotation = MathUtils.randomRange(-5, 5);
 				
 				if(this.currentState != "dragging") {
 					
@@ -92,8 +94,8 @@
 			protected function onEditClickHandler():void {
 				
 				var taskPoint:Point = new Point(this.x, this.y);
-				//trace("Task point:"+taskPoint.toString());
-				var globalPoint:Point = this.parent.localToGlobal(taskPoint);
+				var gPoint:Point = this.parent.localToGlobal(taskPoint);
+				var globalPoint:SimplePoint = new SimplePoint(gPoint.x, gPoint.y);
 				//trace("Global point:"+globalPoint.toString());
 				
 				//this.owner.dispatchEvent(new UpdateTaskEvent(UpdateTaskEvent.UPDATE_TASK));
@@ -138,8 +140,7 @@
 		</s:fill>
 	</s:Rect>
 	<s:RectangularDropShadow width="100%" height="100%" color="0x000000" distance="5" angle="60"/>
-	<!--<s:Image id="pinIcon" source="{PinIcon}" smooth="true" 
-			 transformX="0" transformY="24" width="24" height="24" smoothingQuality="high" x="{this.width/2}" y="-10" excludeFrom="dragging"/>-->
+	
 	<s:Image id="pinIcon" smooth="true" 
 			 transformX="22" transformY="28" width="24" height="29" smoothingQuality="high" x="{this.width/2 - 22}" y="-12" excludeFrom="dragging"/>
 	<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="20">
@@ -151,7 +152,7 @@
 		<s:Label id="textLabel" text="{(data as TaskVO).text}" height="100%" width="100%" maxDisplayedLines="-1" lineBreak="toFit" styleName="markerStyle" showTruncationTip="true"/>
 	</s:VGroup>
 	<s:HGroup visible="false" visible.hovered="true" visible.selected="true" right="5" top="5">
-		<s:Button click="onEditClickHandler()" width="24" icon="{EditIcon}" skinClass="components.skins.SmoothIconButtonSkin" toolTip="Edit task"/>
-		<s:Button click="onDeleteClickHandler()" width="24" icon="{DeleteIcon}" skinClass="components.skins.SmoothIconButtonSkin" toolTip="Delete task (no undo)"/>
+		<components:ButtonIconWithBrandStyle click="onEditClickHandler()" width="24" icon="{EditIcon}" skinClass="components.skins.SmoothIconButtonSkin" toolTip="Edit task"/>
+		<components:ButtonIconWithBrandStyle click="onDeleteClickHandler()" width="24" icon="{DeleteIcon}" skinClass="components.skins.SmoothIconButtonSkin" toolTip="Delete task (no undo)"/>
 	</s:HGroup>
 </s:ItemRenderer>

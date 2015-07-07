@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
-		 xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:components="michaPau.components.*" width="400" height="300" 
 		 backgroundColor="{(colorSelect.selectedItem as CategoryVO).color}" 
 		 xmlns:exp="http://flex.apache.org/experimental/ns" 
-		 creationCompleteEffect="{showEffect}" removedEffect="{hideEffect}" filters="{new DropShadowFilter(5, 60)}" skinClass="components.skins.FlatSparkPosiItSkin">
+		 creationCompleteEffect="{showEffect}" removedEffect="{hideEffect}" filters="{new DropShadowFilter(5, 60)}" skinClass="components.skins.FlatSparkPostItSkin">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here 
 		skinClass="components.skins.KanbanPostItSkin"
@@ -40,13 +41,14 @@
 			import framework.models.vo.TaskVO;
 			
 			import michaPau.utils.ColorUtils;
+			import michaPau.utils.geom.SimplePoint;
 			
 			[Bindable] public var task:TaskVO;
 			[Bindable] public var fontColor:uint;
 			[Bindable] public var categories:ArrayCollection;
 			
-			[Bindable] public var startPoint:Point;
-			[Bindable] public var endPoint:Point;
+			[Bindable] public var startPoint:SimplePoint;
+			[Bindable] public var endPoint:SimplePoint;
 			[Bindable] public var startRotation:Number = 0;
 			
 			public function setCategories(data:ArrayCollection):void {
@@ -54,14 +56,15 @@
 				if(currentState == "update") {
 					colorSelect.selectedColor = task.color;
 					fontColor = ColorUtils.getBlackOrWhiteContrast(task.color);
-				} else
+				} else {
 					colorSelect.selectedIndex = 0;
+					fontColor = ColorUtils.getBlackOrWhiteContrast(colorSelect.selectedColor);
+				}
 				
 			}
 			
 			protected function onColorChange():void {
 				fontColor = ColorUtils.getBlackOrWhiteContrast((colorSelect.selectedItem as CategoryVO).color);
-				trace("fontColor:"+fontColor);
 			}
 			protected function onCreateClickHandler():void {
 				var newTask:TaskVO = new TaskVO();
@@ -113,8 +116,8 @@
 		
 		<s:HGroup width="100%">
 			<s:Spacer width="100%"/>
-			<s:Button label.create="Create" label.update="Update" click.create="onCreateClickHandler()" click.update="onUpdateClickHandler()"/>
-			<s:Button label="Cancel" click="onCancelClickHandler()"/>
+			<components:ButtonIconWithBrandStyle label.create="Create" label.update="Update" click.create="onCreateClickHandler()" click.update="onUpdateClickHandler()"/>
+			<components:ButtonIconWithBrandStyle label="Cancel" click="onCancelClickHandler()"/>
 			<s:Spacer width="100%"/>
 		</s:HGroup>
 	</s:VGroup>

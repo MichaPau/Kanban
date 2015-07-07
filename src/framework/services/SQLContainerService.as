@@ -10,6 +10,7 @@ package framework.services
 	
 	import framework.appConfig.Constants;
 	import framework.events.BoardEvent;
+	import framework.events.GlobalErrorEvent;
 	import framework.models.BoardModel;
 	import framework.models.vo.ContainerVO;
 	import framework.models.vo.TaskVO;
@@ -127,6 +128,7 @@ package framework.services
 			trace("SQLService::onSQLErrorHandler");
 			trace(ev.details);
 			updateId = 0;
+			eventDispatcher.dispatchEvent(new GlobalErrorEvent(GlobalErrorEvent.GLOBAL_ERROR, ev.details, ev.operation));
 		}
 		//SQL
 		[Embed(source="/assets/sql/insert/InsertContainer.sql", mimeType="application/octet-stream")]

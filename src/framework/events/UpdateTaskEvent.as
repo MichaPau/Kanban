@@ -6,6 +6,7 @@ package framework.events
 	public class UpdateTaskEvent extends Event {
 		
 		public static const UPDATE_TASK:String = "UpdateTaskEvent_updateTask";
+		public static const UPDATE_TASK_BOARD_ID:String = "UpdateTaskEvent_UpdateTaskBoardId";
 		public var taskId:uint;
 		public var paramDict:Dictionary;
 		

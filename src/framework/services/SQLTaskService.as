@@ -7,6 +7,7 @@ package framework.services
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
+	import framework.events.GlobalErrorEvent;
 	import framework.models.BoardModel;
 	import framework.models.vo.TaskVO;
 	import framework.services.helper.ISQLRunnerDelegate;
@@ -62,6 +63,27 @@ package framework.services
 			statements[statements.length] = new QueuedStatement(sqlText, {columnValue: _columnValue, taskId: _taskId});
 			sqlRunner.executeModify(statements, _resultHandler, onSQLErrorHandler, null);
 		}
+		
+		public function updateTaskBoardId(_taskId:uint, _boardId:uint):void {
+			
+			//trace("SQLTaskService::updateTaskBoardId");
+			//trace("taskId:"+_taskId);
+			//trace("boardId:"+_boardId);
+			
+			updateId = _taskId;
+			var sqlText:String = "UPDATE main.Tasks ";
+			sqlText += "SET "; 
+			sqlText += "boardId = :boardId, ";
+			sqlText += "categoryId = (SELECT min(id) from main.Categories WHERE boardId = :boardId), ";
+			sqlText += "containerId = (SELECT min(id) from main.Containers WHERE boardId = :boardId) ";
+			sqlText += "WHERE id = :taskId;";
+			
+			//trace(sqlText);
+			
+			var statements:Vector.<QueuedStatement> = new Vector.<QueuedStatement>();
+			statements[statements.length] = new QueuedStatement(sqlText, {boardId: _boardId, taskId: _taskId});
+			sqlRunner.executeModify(statements, updateTaskBoardIdResultHandler, onSQLErrorHandler, null);
+		}
 		public function insertTask(_task:TaskVO):void {
 			//sqlRunner
 			var statements:Vector.<QueuedStatement> = new Vector.<QueuedStatement>();
@@ -80,8 +102,12 @@ package framework.services
 			statements[statements.length] = new QueuedStatement(RESET_TASKS_CATEGORY_SQL, {newCategory: _newCategoryId, oldCategory: _oldCategoryId});
 			sqlRunner.executeModify(statements , resetTasksCategoryResultHandler, onSQLErrorHandler, null);
 		}*/
+		protected function updateTaskBoardIdResultHandler(results:Vector.<SQLResult>):void {
+			boardModel.removeTask(updateId);
+			updateId = 0;
+		}
 		protected function updateTaskResultHandler(results:Vector.<SQLResult>):void {
-			trace("SQLTaskService::updateTaskResultHandler");
+			//trace("SQLTaskService::updateTaskResultHandler");
 			var result:SQLResult = results[0];
 			if (result.rowsAffected > 0 && updateId != 0) {
 				//var id:Number = result.lastInsertRowID;
@@ -90,7 +116,7 @@ package framework.services
 			}
 		}
 		protected function loadTaskResultHandler(result:SQLResult):void {
-			trace("SQLTaskService::loadTaskResultHandler");
+			//trace("SQLTaskService::loadTaskResultHandler");
 			var task:TaskVO = result.data[0] as TaskVO;
 			boardModel.updateTask(task);
 	
@@ -117,6 +143,7 @@ package framework.services
 			trace(ev.details);
 			if(updateId != 0)
 				updateId = 0;
+			eventDispatcher.dispatchEvent(new GlobalErrorEvent(GlobalErrorEvent.GLOBAL_ERROR, ev.details, ev.operation));
 		}
 		
 		//SQL

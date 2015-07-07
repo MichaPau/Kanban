@@ -3,11 +3,13 @@ package framework.views
 	
 	import framework.events.BoardDataLoadedEvent;
 	import framework.events.BoardEvent;
+	import framework.events.ButtonPositionChangedEvent;
 	import framework.events.CreateUpdateBoardEvent;
 	import framework.events.UpdateBoardResultEvent;
+	import framework.events.UpdateTaskEvent;
 	import framework.views.ui.BoardTabView;
 	
-	import michaPau.events.ButtonPositionChangedEvent;
+	import framework.events.ButtonPositionChangedEvent;
 	
 	import robotlegs.bender.bundles.mvcs.Mediator;
 	
@@ -22,11 +24,12 @@ package framework.views
 			this.addViewListener(CreateUpdateBoardEvent.CREATE, dispatch);
 			this.addViewListener(CreateUpdateBoardEvent.UPDATE, dispatch);
 			this.addViewListener(BoardEvent.DELETE, dispatch);
-			this.addViewListener(ButtonPositionChangedEvent.POSITION_CHANGED, dispatch)
+			this.addViewListener(ButtonPositionChangedEvent.POSITION_CHANGED, dispatch);
+			this.addViewListener(UpdateTaskEvent.UPDATE_TASK_BOARD_ID, dispatch);
 		}
 		
 		protected function onBoardsLoadedHandler(ev:BoardDataLoadedEvent):void {
-			trace("BoardsTabMediator::onBoardsLoadedHandler");
+			//trace("BoardsTabMediator::onBoardsLoadedHandler");
 			
 			view.createButtonBar(ev.result, ev.selectBoardId);
 		}

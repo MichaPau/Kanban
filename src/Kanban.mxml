@@ -74,12 +74,15 @@
 		exp|ColorPicker {
 			skinClass: ClassReference("components.skins.CustomColorPickerSkin");
 		}
-		/*s|Button {
-			skinClass: ClassReference("michaPau.components.ButtonIconWithBrandStyle");
-		}*/
-		s|TextInput {
-			/*skinClass: ClassReference("flatspark.skins.TextInputSkin")*/
+		s|Button {
+			skinClass: ClassReference("flatspark.skins.ButtonSkin");
 		}
+		s|Callout {
+			skinClass: ClassReference("michaPau.skins.BoxyCalloutSkin");
+			contentBackgroundAlpha: 0;
+			backgroundAlpha: 0.8;
+		}
+		
 		s|TitleWindow {
 			skinClass: ClassReference("flatspark.skins.TitleWindowSkin");
 		}
@@ -108,7 +111,6 @@
 			import flash.utils.clearTimeout;
 			import flash.utils.setTimeout;
 			
-			import flatspark.enums.BrandColorEnum;
 			
 			//BrandColorEnum.
 			private var statusTimeout:uint;

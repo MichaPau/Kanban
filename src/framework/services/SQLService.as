@@ -9,6 +9,7 @@ package framework.services
 	import mx.collections.ArrayCollection;
 	
 	import framework.events.BoardEvent;
+	import framework.events.GlobalErrorEvent;
 	import framework.events.UpdateBoardResultEvent;
 	import framework.models.BoardModel;
 	import framework.models.vo.BoardVO;
@@ -90,6 +91,13 @@ package framework.services
 			statements[statements.length] = new QueuedStatement(DELETE_BOARD_SQL, {boardId: _boardId});
 			sqlRunner.executeModify(statements, deleteBoardBatchResultHandler, onSQLErrorHandler, null);
 		}
+		
+		public function updateBoardPosition(_oldIndex:int, _newIndex:int, _boardId:uint):void {
+			var statements:Vector.<QueuedStatement> = new Vector.<QueuedStatement>();
+			statements[statements.length] = new QueuedStatement(UPDATE_BOARD_POSITION_OTHERS_SQL, {newPosition: _newIndex});
+			statements[statements.length] = new QueuedStatement(UPDATE_BOARD_POSITION_SQL, {newPosition: _newIndex,  boardId: _boardId});
+			sqlRunner.executeModify(statements, updateBoardPositionResultHandler, onSQLErrorHandler, null);
+		}
 		protected function onBoardsResultHandler(ev:SQLResult):void {
 			var resultCollection:ArrayCollection = new ArrayCollection(ev.data);
 			boardModel.boards = resultCollection;
@@ -98,6 +106,8 @@ package framework.services
 		protected function onSQLErrorHandler(ev:SQLError):void {
 			trace("SQLService::onSQLErrorHandler");
 			trace(ev.details);
+			trace(ev.operation);
+			eventDispatcher.dispatchEvent(new GlobalErrorEvent(GlobalErrorEvent.GLOBAL_ERROR, ev.details, ev.operation));
 		}
 		
 		protected function categoriesResultHandler(results:Vector.<SQLResult>):void {
@@ -120,15 +130,14 @@ package framework.services
 			
 			eventDispatcher.dispatchEvent(new BoardEvent(BoardEvent.GET_BOARD_DATA, boardModel.selectedBoardId));
 			
-			/*var resultTasks:SQLResult = results[1];
-			
-			if (resultTasks.rowsAffected > 0) {
-				loadTasks(boardId);
-			}*/
 		}
 		
 		protected function deleteBoardBatchResultHandler(results:Vector.<SQLResult>):void {
 			boardModel.requestBoardId = 0;
+			loadBoards();
+		}
+		protected function updateBoardPositionResultHandler(results:Vector.<SQLResult>):void {
+			//
 			loadBoards();
 		}
 		//SQL
@@ -180,5 +189,13 @@ package framework.services
 		[Embed(source="/assets/sql/remove/DeleteCategoriesForBoard.sql", mimeType="application/octet-stream")]
 		private static const DeleteCategoriesForBoardStatementText:Class;
 		public static const DELETE_CATEGORIES_FOR_BOARD_SQL:String = new DeleteCategoriesForBoardStatementText();
+		
+		[Embed(source="/assets/sql/update/UpdateBoardPosition.sql", mimeType="application/octet-stream")]
+		private static const UpdateBoardPositionStatementText:Class;
+		public static const UPDATE_BOARD_POSITION_SQL:String = new UpdateBoardPositionStatementText();
+		
+		[Embed(source="/assets/sql/update/UpdateBoardPositionOthers.sql", mimeType="application/octet-stream")]
+		private static const UpdateBoardPositionOthersStatementText:Class;
+		public static const UPDATE_BOARD_POSITION_OTHERS_SQL:String = new UpdateBoardPositionOthersStatementText();
 	}
 }

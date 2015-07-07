@@ -9,6 +9,8 @@ package framework.controllers
 	import framework.views.events.EditCreateTaskEvent;
 	import framework.views.ui.CreateTaskView;
 	
+	import michaPau.utils.geom.SimplePoint;
+	
 	import robotlegs.bender.bundles.mvcs.Command;
 	import robotlegs.bender.extensions.viewManager.api.IViewManager;
 	
@@ -23,7 +25,7 @@ package framework.controllers
 			
 			switch(event.editType) {
 				case "create":
-					createTask.startPoint = new Point(FlexGlobals.topLevelApplication.width/2 - 90, -120);
+					createTask.startPoint = new SimplePoint(FlexGlobals.topLevelApplication.width/2 - 90, -120);
 					createTask.title = "Create a new task";
 					break;
 				case "update":
@@ -41,7 +43,7 @@ package framework.controllers
 			createTask.rotation = event.rotation;
 			
 			createTask.startRotation = event.rotation;
-			createTask.endPoint = new Point(FlexGlobals.topLevelApplication.width/2 - 200, FlexGlobals.topLevelApplication.height/2 - 150);
+			createTask.endPoint = new SimplePoint(FlexGlobals.topLevelApplication.width/2 - 200, FlexGlobals.topLevelApplication.height/2 - 150);
 			viewManager.addContainer(createTask);
 			
 			PopUpManager.addPopUp(createTask, FlexGlobals.topLevelApplication as DisplayObject, true);

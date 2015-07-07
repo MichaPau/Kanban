@@ -61,15 +61,15 @@
 		]]>
 	</fx:Script>
 	<s:HGroup id="bottomGroup" width="100%" verticalAlign="middle">
-		<s:Button id="newTask_btn" label="New task" click="onCreateTaskClickHandler()" enabled="false"/>
-		<!--<s:Button id="newTask_btn" label="New task" click="onCreateTaskClickHandler()" enabled="false"/>-->
+		<components:ButtonIconWithBrandStyle id="newTask_btn" label="New task" click="onCreateTaskClickHandler()" enabled="false"/>
+		<!--<components:ButtonIconWithBrandStyle id="newTask_btn" label="New task" click="onCreateTaskClickHandler()" enabled="false"/>-->
 		<s:Spacer width="100%"/>
 		<!--<ns:ColorPicker id="colorSelect" includeIn="add"/>-->
 		<mx:ColorPicker id="colorSelect" includeIn="add"/>
 		<s:TextInput id="labelInput" includeIn="add"/>
-		<s:Button click="onAddCatClick()" label="OK" includeIn="add"/>
-		<s:Button label="Cancel" includeIn="add" click="onCancelAddHandler()"/>
-		<s:Button id="addCat_btn" label="Add Cat" click="{this.currentState = 'add'}" enabled="false"/>
+		<components:ButtonIconWithBrandStyle click="onAddCatClick()" label="OK" includeIn="add"/>
+		<components:ButtonIconWithBrandStyle label="Cancel" includeIn="add" click="onCancelAddHandler()"/>
+		<components:ButtonIconWithBrandStyle id="addCat_btn" label="Add Cat" click="{this.currentState = 'add'}" enabled="false"/>
 		<s:HGroup id="legendGroup" verticalAlign="middle"/>
 	</s:HGroup>
 </s:Group>

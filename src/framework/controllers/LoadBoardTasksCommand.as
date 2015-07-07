@@ -17,7 +17,7 @@ package framework.controllers
 		[Inject] public var boardModel:BoardModel;
 		
 		public override function execute():void {
-			trace("LoadBoardTasksCommand::execute");
+			//trace("LoadBoardTasksCommand::execute");
 			service.loadTasks(event.boardId, onTasksResultHandler);
 		}
 		

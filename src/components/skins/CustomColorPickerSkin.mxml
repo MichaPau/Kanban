@@ -20,7 +20,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
-			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabled=".5" minWidth="24"
+			 xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+			 xmlns:components="michaPau.components.*" alpha.disabled=".5" minWidth="24"
 			 currentStateChange="onStateChange(event)">
 	<fx:Metadata>
 		<![CDATA[
@@ -253,7 +254,7 @@
 		</s:Group>
 	</s:PopUpAnchor>
 	
-	<s:Button id="openButton" left="0" right="0" top="0" bottom="0" focusEnabled="false"
+	<components:ButtonIconWithBrandStyle id="openButton" left="0" right="0" top="0" bottom="0" focusEnabled="false"
 			  skinClass="spark.skins.ColorPickerButtonSkin"/>
 	
 	<s:Rect left="2" right="2" top="2" bottom="2" width="20" height="20" radiusX="2">

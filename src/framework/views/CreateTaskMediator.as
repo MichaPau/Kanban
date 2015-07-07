@@ -20,7 +20,7 @@ package framework.views
 		[Inject] public var viewManager:IViewManager;
 		
 		public override function initialize():void {
-			trace("CreateTaskMedaitor::initialize");
+			//trace("CreateTaskMedaitor::initialize");
 			this.addViewListener(CreateTaskEvent.CREATE_TASK, dispatch);
 			this.addViewListener(UpdateTaskEvent.UPDATE_TASK, dispatch);
 			this.addViewListener(CloseEvent.CLOSE, onClosePopup);

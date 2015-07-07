@@ -21,7 +21,7 @@ package
 		[Inject] public var boardModel:BoardModel;
 		
 		public override function initialize():void {
-			trace("KanbanMediator::initialize");
+			//trace("KanbanMediator::initialize");
 			mediatorMap.mediate(app.nativeMenu);
 			
 			this.addContextListener(StatusBarMessageEvent.SHOW_MESSAGE, onStatusBarMessage);

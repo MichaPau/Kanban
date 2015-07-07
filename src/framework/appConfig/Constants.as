@@ -8,5 +8,8 @@ package framework.appConfig
 		
 		public static const FINISHED_TASKS_POSTIT_MODE:String = "postItMode";
 		public static const FINISHED_TASKS_CONDENSED_MODE:String = "condensedMode";
+		
+		public static const DRAG_MODE_BUTTON:String = "buttonDragMode";
+		public static const DRAG_MODE_ITEM:String = "itemDragMode";
 	}
 }
